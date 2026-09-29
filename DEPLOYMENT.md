@@ -1,101 +1,62 @@
-# Thông Tin Deploy — Checkpoint 5
+# Trạng thái triển khai — Checkpoint 5
 
-> Điền file này sau khi deploy xong. `pytest tests/test_cp5.py` đọc file này
-> để tìm địa chỉ service của bạn và gọi thử.
->
-> **Chỉ ghi TÊN biến môi trường, tuyệt đối không dán giá trị API key vào đây.**
-> Repo này công khai — dán khóa vào là mất khóa.
-
-## Thông Tin Học Viên
+## Thông tin học viên
 
 | Mục | Nội dung |
-|-----|----------|
-| Họ và tên | (điền họ tên) |
-| Mã học viên | (điền mã học viên) |
-| Repo | (điền link repo K4-L3B-DAY12-HoVaTen-MSSV-CloudServicesAndDeployment) |
+| --- | --- |
+| Họ và tên | Phạm Quốc Đạt |
+| Mã học viên | 2A202602384 |
+| Repo | https://github.com/PhamDat-05/K4-L3B-DAY12-PhamQuocDat-2A202602384-CloudServicesAndDeployment |
 
 ## Service
 
 | Mục | Nội dung |
-|-----|----------|
-| Public URL | https://TODO-thay-bang-url-that.up.railway.app |
-| Platform | Railway / Render / Cloud Run — (điền platform bạn dùng) |
-| Ngày deploy | (điền ngày) |
+| --- | --- |
+| Public URL | Chưa có |
+| Platform dự kiến | Render (`render.yaml`) |
+| Ngày deploy | Chưa deploy |
+| Trạng thái | Chưa hoàn thành CP5: chưa có tài khoản cloud; máy hiện cũng chưa có Docker để chạy phương án dự phòng |
 
-## Biến Môi Trường Đã Set Trên Cloud
+## Biến môi trường trên cloud
 
-Ghi tên biến và **nguồn giá trị**, không ghi giá trị:
+Các biến sau **chưa được set trên cloud**. Khi tạo Render Blueprint, cung cấp secret qua dashboard; không chép giá trị vào repository.
 
-| Biến | Đã set | Ghi chú |
-|------|--------|---------|
-| `PORT` | ✅ | platform tự gán |
-| `AGENT_API_KEY` | ✅ | đặt trong dashboard, không nằm trong repo |
-| `REDIS_URL` | ✅ | (điền: Redis add-on của platform / Upstash / ...) |
-| `RATE_LIMIT_PER_MINUTE` | ✅ | 10 |
-| `MONTHLY_BUDGET_USD` | ✅ | 10.0 |
-| `LOG_LEVEL` | ✅ | INFO |
+| Biến | Trạng thái | Nguồn dự kiến |
+| --- | --- | --- |
+| `PORT` | Chưa kiểm tra | Render cấp lúc chạy |
+| `AGENT_API_KEY` | Chưa set | Render dashboard, tạo khóa riêng |
+| `REDIS_URL` | Chưa set | Render Key Value qua `fromService` trong Blueprint |
+| `RATE_LIMIT_PER_MINUTE` | Khai báo trong `render.yaml` | Cấu hình không bí mật |
+| `MONTHLY_BUDGET_USD` | Khai báo trong `render.yaml` | Cấu hình không bí mật |
+| `LOG_LEVEL` | Khai báo trong `render.yaml` | Cấu hình không bí mật |
 
-## Lệnh Kiểm Tra
+## Kết quả đã kiểm chứng tại máy
 
-Thay `<URL>` bằng Public URL ở trên:
-
-```bash
-# 1. Liveness — mong đợi 200 {"status":"ok"}
-curl -i <URL>/health
-
-# 2. Readiness — mong đợi 200 {"status":"ready"} (đã nối được Redis)
-curl -i <URL>/ready
-
-# 3. Không có API key — mong đợi 401
-curl -i -X POST <URL>/ask \
-  -H "Content-Type: application/json" \
-  -d '{"question":"Hello"}'
-
-# 4. Có API key — mong đợi 200 kèm câu trả lời
-curl -i -X POST <URL>/ask \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: $AGENT_API_KEY" \
-  -H "X-User-Id: sv-test" \
-  -d '{"question":"Deploy là gì?"}'
-
-# 5. Rate limit — gọi 15 lần, những lần cuối phải trả 429
-for i in $(seq 1 15); do
-  curl -s -o /dev/null -w "%{http_code} " -X POST <URL>/ask \
-    -H "Content-Type: application/json" \
-    -H "X-API-Key: $AGENT_API_KEY" \
-    -H "X-User-Id: sv-test" \
-    -d '{"question":"test"}'
-done; echo
+```text
+python -m pytest tests/test_cp1.py tests/test_cp2.py tests/test_cp3.py tests/test_cp4.py -q -m "not docker"
+68 passed, 2 deselected
 ```
 
-## Kết Quả Chạy Thật
+Hai test Docker bị bỏ qua vì không có Docker CLI. Chưa gọi được `/health`, `/ready` hoặc `/ask` qua một URL công khai; chưa có ảnh dashboard hay ảnh health. Không dùng log của TestClient làm bằng chứng cloud.
 
-Dán output của các lệnh trên vào đây:
+Smoke test với Uvicorn cục bộ tại `127.0.0.1:8765` (Redis giả lập trong tiến trình):
 
+```text
+GET /health                 200
+GET /ready                  200
+POST /ask không có key      401
+POST /ask có key, lượt 1   200  history_length=0
+POST /ask có key, lượt 2   200  history_length=2
 ```
-(điền output)
-```
 
-## Ảnh Chụp Màn Hình
+Đây là kết quả trên máy, chưa phải bằng chứng cho CP5.
 
-Đặt ảnh trong thư mục `screenshots/`:
+## Các bước còn lại để hoàn thành CP5
 
-- `screenshots/dashboard.png` — trang quản lý service trên platform
-- `screenshots/health.png` — kết quả gọi `/health` từ trình duyệt hoặc curl
+1. Tạo tài khoản Render và kết nối repo GitHub này.
+2. Tạo Blueprint từ `render.yaml`, nhập `AGENT_API_KEY` riêng trong dashboard, kiểm tra Render Key Value và `REDIS_URL`.
+3. Deploy service; lấy Public URL thật và ghi vào bảng trên.
+4. Gọi `/health` (200), `/ready` (200), `/ask` không có key (401), rồi `/ask` có key (200). Giữ khóa trong `.env` hoặc dashboard, không ghi vào file này.
+5. Ghi output HTTP thực tế, chụp dashboard và kết quả `/health` vào `screenshots/`, sau đó chạy `pytest tests/test_cp5.py -v`.
 
----
-
-## Nếu Dùng Phương Án Dự Phòng
-
-Không đăng ký được tài khoản cloud? Vẫn nộp được bài, nhưng CP5 tối đa 60% điểm:
-
-1. Đặt `LOCAL_FALLBACK=true` trong `.env`
-2. Chạy `docker compose up -d` rồi kiểm tra `docker compose ps`
-3. Chụp màn hình vào `screenshots/`
-4. Chạy `pytest tests/test_cp5.py -v` — bộ test sẽ tự chuyển sang kiểm tra
-   `http://localhost:8000`
-5. Ghi rõ lý do không deploy được vào phần dưới đây:
-
-```
-(điền lý do nếu dùng phương án dự phòng, ngược lại xóa mục này)
-```
+Render Key Value gói miễn phí không lưu bền dữ liệu khi instance khởi động lại. Vì vậy lịch sử, rate limit và tổng chi phí có thể bị reset; cần gói có persistence nếu muốn giới hạn chi phí đáng tin cậy trong production.

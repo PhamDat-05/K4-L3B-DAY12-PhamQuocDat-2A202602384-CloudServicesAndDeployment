@@ -1,3 +1,5 @@
+![CI](https://github.com/PhamDat-05/K4-L3B-DAY12-PhamQuocDat-2A202602384-CloudServicesAndDeployment/actions/workflows/ci.yml/badge.svg)
+
 # K4 — Level 3B, Ngày 12: Hạ Tầng Cloud & Deployment (240 phút)
 
 Đưa một AI agent từ `localhost:8000` lên một địa chỉ công khai mà người khác
@@ -286,3 +288,9 @@ Nộp **link repository** lên Codelab. Repo phải ở chế độ public.
 - [ ] Không còn `NotImplementedError` nào trong `app/`
 - [ ] Có commit ở nhiều mốc thời gian, không phải một commit duy nhất
 - [ ] *(Bonus)* `.github/workflows/ci.yml` chạy xanh, README có badge `passing`
+
+## Trạng thái triển khai của repository này
+
+Mã nguồn CP1–CP4 đã qua 68 test cục bộ; 2 test build image cần Docker chưa thể chạy trên máy hiện tại. Cấu hình Compose được thiết kế để chạy nhiều replica `agent` qua Nginx ở `localhost:8000`, nhưng chưa được kiểm tra với Docker thật. Chưa có tài khoản cloud hay Public URL, nên CP5 và badge CI/CD cần được xác minh sau khi push/deploy thật. Xem [DEPLOYMENT.md](DEPLOYMENT.md) để biết bằng chứng hiện có và các bước còn lại.
+
+Để bật job deploy của GitHub Actions sau khi tạo service Render, lưu deploy hook vào repository secret `RENDER_DEPLOY_HOOK_URL`, đặt repository variable `PUBLIC_URL` bằng URL HTTPS của service và `DEPLOY_ENABLED=true`. Giữ `autoDeployTrigger: off` trong `render.yaml` để chỉ workflow đã qua test/build mới kích hoạt deploy.
