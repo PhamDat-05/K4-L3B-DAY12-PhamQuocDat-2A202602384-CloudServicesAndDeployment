@@ -116,4 +116,4 @@ Ghi lại **một** lỗi bạn gặp khi deploy lên cloud (build fail, health 
 timeout, sai REDIS_URL, app không đọc `$PORT`...): thông báo lỗi là gì, bạn
 tìm ra nguyên nhân bằng cách nào, và sửa ra sao?
 
-> Tôi chưa có tài khoản cloud nên chưa thể báo một lỗi deploy thật hay cách sửa đã được kiểm chứng. Trở ngại quan sát được ở bước chuẩn bị là `Get-Command docker` không tìm thấy Docker CLI, nên chưa thể build image hoặc chạy phương án `docker compose`. Tôi xác định bằng cách kiểm tra lệnh và đường dẫn Docker Desktop, rồi chuẩn bị Dockerfile, Compose và `render.yaml`; bước còn lại là cài Docker hoặc tạo tài khoản Render, deploy, đọc log thật và cập nhật câu này bằng lỗi/khắc phục thực tế.
+> Tôi không gặp lỗi trong lần deploy Render này, nên không thể ghi một thông báo lỗi hay cách sửa có thật. Để xác minh, tôi gọi Public URL: `/health` trả 200 với `status=ok`, `/ready` trả 200 với `redis=true`, `/ask` thiếu key trả 401 và có key trả 200; `pytest tests/test_cp5.py -v` đạt 9 test, 4 test fallback được bỏ qua. Nếu có lỗi ở lần deploy sau, tôi sẽ đọc build/runtime log trên Render, xác định nguyên nhân và bổ sung tình huống thực tế vào đây, không tự tạo lỗi giả.
